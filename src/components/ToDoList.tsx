@@ -1,45 +1,39 @@
-import { useForm } from "react-hook-form";
-import {
-  atom,
-  useRecoilState,
-  useRecoilValue,
-  useSetRecoilState,
-} from "recoil";
-
-interface IForm {
-  toDo: string;
-}
-
-const toDoState = atom({
-  key: "toDo",
-  default: [],
-});
+import { useRecoilState, useRecoilValue } from "recoil";
+import { categoryState, toDoSelector, Categories } from "../atoms";
+import CreateToDo from "./CreateToDo";
+import ToDo from "./ToDo";
+import styled from "styled-components";
 
 function ToDoList() {
-  // const value = useRecoilValue(toDoState);  리코일로 값을 받아옴
-  // const setValue = useSetRecoilState(toDoState)   받아온 값을 수정함
-  const [toDoValue, setToDoValue] = useRecoilState(toDoState); // 각각 필요할 땐 따로 쓰고 합쳐서 쓰고싶을 땐 useRecoilState를 사용하면 된다.
-  const { register, handleSubmit, setValue } = useForm<IForm>();
-  const handleValid = (data: IForm) => {
-    setValue("toDo", "");
+  const toDos = useRecoilValue(toDoSelector);
+  const [category, setCategory] = useRecoilState(categoryState);
+  const onInput = (event: React.FormEvent<HTMLSelectElement>) => {
+    setCategory(event.currentTarget.value as any);
   };
 
   return (
-    <div>
+    <Construtor>
       <h1>To Dos!</h1>
       <hr />
-      <form onSubmit={handleSubmit(handleValid)}>
-        <input
-          {...register("toDo", {
-            required: "Please write a To Do",
-          })}
-          placeholder="Write a to do list"
-        />
-        <button>Add</button>
-      </form>
-      <ul></ul>
-    </div>
+      <select value={category} onInput={onInput}>
+        <option value={Categories.TO_DO}>To Do</option>
+        <option value={Categories.DOING}>Doing</option>
+        <option value={Categories.DONE}>Done</option>
+      </select>
+      <CreateToDo />
+      {toDos?.map((toDo) => (
+        <ToDo key={toDo.id} {...toDo} />
+      ))}
+    </Construtor>
   );
 }
+
+const Construtor = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+`;
 
 export default ToDoList;
